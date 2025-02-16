@@ -17,24 +17,6 @@ public class Triangle
         return vertices;
     }
 
-    public GameObject Instantiate(Material material)
-    {
-        GameObject gameObject = new GameObject();
-
-        gameObject.AddComponent<MeshRenderer>();
-        MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
-        meshRenderer.material = material;
-
-        gameObject.AddComponent<MeshFilter>();
-        Mesh mesh = gameObject.GetComponent<MeshFilter>().mesh;
-        mesh.Clear();
-        mesh.vertices = vertices;
-        mesh.RecalculateNormals();
-        mesh.triangles = new int[] { 0, 1, 2 };
-
-        return gameObject;
-    }
-
     public List<Triangle> subdivide()
     {
         List<Triangle> triangles = new List<Triangle>();
@@ -57,5 +39,10 @@ public class Triangle
         midPoints[2] = ((vertices[1] + vertices[2]) / 2).normalized;
 
         return midPoints;
+    }
+
+    public Vector3Int getIndices(List<Vector3> vertices)
+    {
+        return new Vector3Int (vertices.IndexOf(this.vertices[0]), vertices.IndexOf(this.vertices[1]), vertices.IndexOf(this.vertices[2]));
     }
 }

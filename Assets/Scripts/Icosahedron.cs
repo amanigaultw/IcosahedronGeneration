@@ -3,16 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class DrawIcosahedron : MonoBehaviour
+[RequireComponent(typeof(MeshFilter))]
+[RequireComponent(typeof(MeshRenderer))]
+public class Icosahedron : MonoBehaviour
 {
-    [SerializeField]
-    Material material;
-
-    [SerializeField]
+    [SerializeField, Range(0, 5)] // too many triangles for a single mesh past 5 subdivisions
     int subdivisionCount = 0;
-
-    [SerializeField]
-    bool showVertices = true;
 
     private List<Vector3> vertices = new List<Vector3>();
     private List<Triangle> triangles = new List<Triangle>();
@@ -21,25 +17,11 @@ public class DrawIcosahedron : MonoBehaviour
     {
         initializeVertices();
         initializeTriangles();
-        draw();
-    }
-
-    private void draw()
-    {
         for (int i = 0; i < subdivisionCount; i++)
         {
             subdivide();
         }
-
         drawFaces();
-        
-        if (showVertices)
-        {
-            drawVertices(vertices);
-        }
-
-        gameObject.transform.localScale = Vector3.one * 4f * (subdivisionCount + 1f);
-        gameObject.transform.position = new Vector3(0, 0, (subdivisionCount + 1f) * 10f);
     }
 
     private void initializeVertices()
@@ -106,25 +88,25 @@ public class DrawIcosahedron : MonoBehaviour
     }
     private void drawFaces()
     {
+        List<int> triangleIndices = new List<int>();
+
         for (int i = 0; i < triangles.Count; i++)
         {
             Triangle triangle = triangles[i];
-            GameObject gameObject = triangle.Instantiate(material);
-            gameObject.name = "Triangle " + i;
-            gameObject.transform.parent = this.gameObject.transform;
+            Vector3Int indices = triangle.getIndices(vertices);
+            triangleIndices.Add(indices[0]);
+            triangleIndices.Add(indices[1]);
+            triangleIndices.Add(indices[2]);
         }
-    }
 
-    private void drawVertices(List<Vector3> vertices)
-    {
-        for (int i = 0; i < vertices.Count; i++)
-        {
-            GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            gameObject.name = "vertice " + i;
-            gameObject.transform.localScale = Vector3.one / (10f * (subdivisionCount + 1));
-            gameObject.transform.position = vertices[i];
-            gameObject.transform.parent = this.gameObject.transform;
-        }
+        Vector3[] newVertices = vertices.ToArray();
+        int[] newTriangles = triangleIndices.ToArray();
+
+        Mesh mesh = new Mesh();
+        GetComponent<MeshFilter>().mesh = mesh;
+        mesh.vertices = newVertices;
+        mesh.RecalculateNormals();
+        mesh.triangles = newTriangles;
     }
 
 }
